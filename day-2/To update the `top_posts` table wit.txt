@@ -1,0 +1,43 @@
+To update the `top_posts` table with fresh data every 2 hours using a cron job, you can follow these steps:
+
+1. Create a SQL script or query that retrieves the top 15 liked posts from users with a 'public' profile type and updates the `top_posts` table. Save this script as a `.sql` file, e.g., `update_top_posts.sql`. The script should be similar to the one you used to create the table initially:
+
+```sql
+-- update_top_posts.sql
+
+-- Delete existing data in the top_posts table
+DELETE FROM top_posts;
+
+-- Insert new data into the top_posts table
+INSERT INTO top_posts
+SELECT p.*
+FROM posts p
+JOIN users u ON p.user_id = u.user_id
+WHERE u.profile_type = 'public'
+ORDER BY p.totalLike DESC
+LIMIT 15;
+```
+
+2. Make sure you have the necessary database credentials (username, password, database name) to connect to your MySQL database.
+
+3. Set up a cron job on your server to run the SQL script at the desired interval (every 2 hours). You can do this by editing your crontab file.
+
+Open your crontab file for editing using the `crontab -e` command:
+
+```bash
+crontab -e
+```
+
+4. Add a cron job entry to schedule the execution of your SQL script. For example, to run the script every 2 hours, you can use the following entry:
+
+```bash
+0 */2 * * * mysql -u your_username -pYourPassword -D your_database < /path/to/update_top_posts.sql
+```
+
+Make sure to replace `your_username`, `YourPassword`, `your_database`, and `/path/to/update_top_posts.sql` with your actual database credentials and the correct file path to your SQL script.
+
+5. Save and exit the text editor.
+
+Now, your cron job is set up to run the `update_top_posts.sql` script every 2 hours, refreshing the data in the `top_posts` table with the latest top liked posts from users with a 'public' profile type.
+
+Make sure to secure your database credentials and the SQL script file to prevent unauthorized access.
