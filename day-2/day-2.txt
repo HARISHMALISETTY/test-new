@@ -1,0 +1,32 @@
+1.html images--->absolute path only(for now)
+
+<div> tag
+2.block level elements-->elements which occupies entire line space.
+3.inline level elements-->elements which occupies only required space.<span>
+
+4.formatting tags
+	
+<b> - Bold text
+<strong> - Important text
+<i> - Italic text
+<em> - Emphasized text
+<mark> - Marked text
+<small> - Smaller text
+<del> - Deleted text
+<ins> - Inserted text
+<sub> - Subscript text
+<sup> - Superscript text
+<u>-   underline
+<pre>
+<marquee>
+
+
+5.quotations
+
+<q>--quote
+<abbr title="World Health Organization">WHO</abbr>
+<address>
+<bdo dir="rtl"></bdo>---bio directional override.
+
+download attribute in anchor tag
+

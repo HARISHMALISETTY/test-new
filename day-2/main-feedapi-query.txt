@@ -1,0 +1,98 @@
+-- Retrieve 15 posts from the user's own feed (including their own posts)
+(SELECT 
+    users.username, users.userid,
+    concat('https://file.touchapp.in/', REPLACE(users.profile_pic, ',', ',https://file.touchapp.in/')) as profile_pic,
+    posts.caption,
+    (SELECT caption FROM posts as p WHERE p.id = posts.id AND p.user_id = posts.user_id ORDER BY p.created_timestamp DESC LIMIT 1) as latest_caption,
+    concat(REPLACE(posts.post_file, '"path":"', '"path":"https://file.touchapp.in/')) as latest_post_file,
+    concat('https://file.touchapp.in/', REPLACE(posts.thumbnail, ',', ',https://file.touchapp.in/')) as latest_thumbnail,
+    posts.post_type,
+    posts.id as postid,
+    posts.user_id,
+    FROM_UNIXTIME(posts.created_timestamp / 1000) as created_datetime,
+    posts.img_orientation, 
+    (select count(*) from savefeed where type = 'POST' AND feedid = posts.id and userid = 567) as isSaved,
+    (SELECT COUNT(id) from post_likes WHERE post_likes.post_id = posts.id) as like_count, 
+    (SELECT COUNT(id) from comments WHERE comments.post_id = posts.id) as comment_count,
+    (SELECT COUNT(*) from post_likes WHERE post_likes.post_id = posts.id AND post_likes.user_id = 567) as isLiked,
+    case when(SELECT COUNT(*) from comments WHERE comments.post_id = posts.id AND comments.user_id = 567)>0 then 1 else 0 end as isCommented,
+    CASE WHEN (select count(*) from share_post where share_post.user_id = 567 and share_post.action_type = 'post' and share_post.action_id = posts.id) > 0 THEN '1' ELSE '0' END AS isShared,
+    posts.location_name,
+    posts.lattitude,
+    posts.longitude,
+    CASE WHEN (SELECT count(*) FROM `posts` as post join reports ON post.id = reports.activity_id WHERE reports.type = 'POST' and post.id = posts.id) > 0 THEN 'Already reported' ELSE 'Not reported' END as post_report,
+    'Following' as source -- Added source column
+FROM posts 
+JOIN users ON posts.user_id = users.userid 
+WHERE 
+    users.userid = 567 -- Replace 567 with the user ID
+    AND posts.created_timestamp / 1000 >= UNIX_TIMESTAMP(CURDATE() - INTERVAL 32 DAY) -- Filter posts as per days
+ORDER BY created_datetime DESC
+LIMIT 15)
+
+UNION
+
+-- Retrieve 15 posts from following users
+(SELECT 
+    users.username, users.userid,
+    concat('https://file.touchapp.in/', REPLACE(users.profile_pic, ',', ',https://file.touchapp.in/')) as profile_pic,
+    posts.caption,
+    (SELECT caption FROM posts as p WHERE p.id = posts.id AND p.user_id = posts.user_id ORDER BY p.created_timestamp DESC LIMIT 1) as latest_caption,
+    concat(REPLACE(posts.post_file, '"path":"', '"path":"https://file.touchapp.in/')) as latest_post_file,
+    concat('https://file.touchapp.in/', REPLACE(posts.thumbnail, ',', ',https://file.touchapp.in/')) as latest_thumbnail,
+    posts.post_type,
+    posts.id as postid,
+    posts.user_id,
+    FROM_UNIXTIME(posts.created_timestamp / 1000) as created_datetime,
+    posts.img_orientation, 
+    (select count(*) from savefeed where type = 'POST' AND feedid = posts.id and userid = 567) as isSaved,
+    (SELECT COUNT(id) from post_likes WHERE post_likes.post_id = posts.id) as like_count, 
+    (SELECT COUNT(id) from comments WHERE comments.post_id = posts.id) as comment_count,
+    (SELECT COUNT(*) from post_likes WHERE post_likes.post_id = posts.id AND post_likes.user_id = 567) as isLiked,
+    case when(SELECT COUNT(*) from comments WHERE comments.post_id = posts.id AND comments.user_id = 567)>0 then 1 else 0 end as isCommented,
+    CASE WHEN (select count(*) from share_post where share_post.user_id = 567 and share_post.action_type = 'post' and share_post.action_id = posts.id) > 0 THEN '1' ELSE '0' END AS isShared,
+    posts.location_name,
+    posts.lattitude,
+    posts.longitude,
+    CASE WHEN (SELECT count(*) FROM `posts` as post join reports ON post.id = reports.activity_id WHERE reports.type = 'POST' and post.id = posts.id) > 0 THEN 'Already reported' ELSE 'Not reported' END as post_report,
+    'Following' as source -- Added source column
+FROM posts 
+JOIN users ON posts.user_id = users.userid 
+JOIN followers ON posts.user_id = followers.following_id
+WHERE 
+    followers.follower_id = 567 -- Replace 567 with the user ID
+    AND posts.created_timestamp / 1000 >= UNIX_TIMESTAMP(CURDATE() - INTERVAL 15 DAY) -- Filter posts as per days
+ORDER BY created_datetime DESC
+LIMIT 35)
+
+UNION
+
+-- Retrieve latest 15 trending posts from public users
+(SELECT 
+    users.username, users.userid,
+    concat('https://file.touchapp.in/', REPLACE(users.profile_pic, ',', ',https://file.touchapp.in/')) as profile_pic,
+    latest_posts.caption,
+    (SELECT caption FROM posts as p WHERE caption LIKE '%#%' AND p.id = latest_posts.id) as caption_hashtag,
+    concat(REPLACE(latest_posts.post_file, '"path":"', '"path":"https://file.touchapp.in/')) as post_file,
+    concat('https://file.touchapp.in/', REPLACE(latest_posts.thumbnail, ',', ',https://file.touchapp.in/')) as thumbnail,
+    latest_posts.post_type,
+    latest_posts.id as postid,
+    latest_posts.user_id,
+    FROM_UNIXTIME(latest_posts.created_timestamp / 1000) as created_datetime,
+    latest_posts.img_orientation, 
+    (select count(*) from savefeed where type = 'POST' AND feedid = latest_posts.id and userid = 567) as isSaved,
+    (SELECT COUNT(id) from post_likes WHERE post_likes.post_id = latest_posts.id) as like_count, 
+    (SELECT COUNT(id) from comments WHERE comments.post_id = latest_posts.id) as comment_count,
+    (SELECT COUNT(*) from post_likes WHERE post_likes.post_id = latest_posts.id AND post_likes.user_id = 567) as isLiked,
+    case when(SELECT COUNT(*) from comments WHERE comments.post_id = latest_posts.id AND comments.user_id = 567)>0 then 1 else 0 end as isCommented,
+    CASE WHEN (select count(*) from share_post  where share_post.user_id = 567 and share_post.action_type = 'post' and share_post.action_id = latest_posts.id) > 0 THEN '1' ELSE '0' END AS isShared,
+    latest_posts.location_name,
+    latest_posts.lattitude,
+    latest_posts.longitude,
+    CASE WHEN (SELECT count(*) FROM `posts` as post join reports ON post.id = reports.activity_id WHERE reports.type = 'POST' and post.id = latest_posts.id) > 0 THEN 'Already reported' ELSE 'Not reported' END as post_report,
+    'Trending' as source -- Added source column
+FROM latest_posts -- Using latest_posts table
+JOIN users ON latest_posts.user_id = users.userid 
+order by like_count DESC
+);
+

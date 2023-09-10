@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+
+</head>
+<body>
+<h1>heading1</h1>
+
+
+</body>
+</html>
+
+
+
+elements--
+1.block level element
+	A element which occupies entire line.
+	it is always starts with a new line.
+
+
+2.inline element
